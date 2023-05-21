@@ -202,7 +202,7 @@ ________________________________________________________________________________
 
 6R:
 (NOT WORKING)
-select *
+select pl.name, c.name, v.id
 from videogames v 
 	join reviews r  
 		on r.videogame_id = v.id 
@@ -215,6 +215,7 @@ from videogames v
 	join pegi_labels pl 
 		on plv.pegi_label_id = pl.id 
 where r.rating >= 4 
+group by pl.name, c.name, v.id
 ________________________________________________________________________________________________
 7- Selezionare quali giochi erano presenti nei tornei nei quali hanno partecipato i giocatori il cui nome inizia per 'S' (474)
 
@@ -250,8 +251,7 @@ ________________________________________________________________________________
 9- Selezionare i giocatori che hanno giocato al gioco più atteso del 2018 in un torneo del 2019 (3306)
 
 9R:
-(still to be worked on)
-select a.name as award_name, t.city as tournament_city
+select p.id as player_id, p.name as player_name
 from awards a 
 	join award_videogame av 
 		on a.id = av.award_id 
@@ -274,20 +274,49 @@ ________________________________________________________________________________
 10- Selezionare i dati della prima software house che ha rilasciato un gioco, assieme ai dati del gioco stesso (software house id : 5)
 
 10R:
-
+select sh.*, v.*
+from videogames v 
+	join software_houses sh 
+		on v.software_house_id = sh.id
+order by v.release_date 
+limit 1
 ________________________________________________________________________________________________
 11- Selezionare i dati del videogame (id, name, release_date, totale recensioni) con più recensioni (videogame id : potrebbe uscire 449 o 398, sono entrambi a 20)
 
 11R:
-
+select v.id, v.name, v.overview, v.release_date, v.software_house_id, count(*) as reviews_count
+from reviews r 
+	join videogames v 
+		on r.videogame_id = v.id
+group by v.id
+order by reviews_count desc
+limit 1
 ________________________________________________________________________________________________
 12- Selezionare la software house che ha vinto più premi tra il 2015 e il 2016 (software house id : potrebbe uscire 3 o 1, sono entrambi a 3)
 
 12R:
-
+select sh.id, sh.name, count(*) as awards_count
+from software_houses sh 
+	join videogames v 
+		on sh.id = v.software_house_id 
+	join award_videogame av 
+		on v.id = av.videogame_id 
+where av.`year` = 2015 or av.`year` = 2016
+group by sh.id 
+order by awards_count desc
+limit 1
 ________________________________________________________________________________________________
 13- Selezionare le categorie dei videogame i quali hanno una media recensioni inferiore a 1.5 (10)
 
 13R:
-
+select c.id, c.name, avg(r.rating)
+from categories c 
+	join category_videogame cv 
+		on c.id = cv.category_id 
+	join videogames v 
+		on cv.videogame_id = v.id 
+	join reviews r 
+		on v.id = r.videogame_id 
+where r.rating <= 1.5
+group by c.id
 ________________________________________________________________________________________________
